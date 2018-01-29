@@ -64,15 +64,14 @@ redhat_portal_username/redhat_portal_password in a way that keeps them out of th
 
 Create a YAML file, say redhat-portal-creds.yaml, on your workstation containing the following,
 with XXXXXX/YYYYYY replaced with our Insights/Portal/RHSM username/password:
+
     redhat_portal_username: XXXXXX
     redhat_portal_password: YYYYYY
 
 Change the permissions on the file so that only you can read them, and then any time you invoke
 this role, add the ansible-playbook --extra-vars option:
 
-    ```bash
     $ ansible-playbook ... --extra-vars @redhat-portal-creds.yml ...
-    ```
 
 Note that one of the really useful features of Ansible Tower is role based management of credentials
 like this.
