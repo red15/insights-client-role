@@ -1,7 +1,7 @@
-redhat-access-insights-client
+redhat-insights-client
 ========
 
-Installs, configures, and registers a system to the [Red Hat Insights service](http://access.redhat.com/insights).  This role is intended to work on RHEL 6 or RHEL 7, though it will generally work on any yum based system that has access to the redhat-access-insights RPM.
+Installs, configures, and registers a system to the [Red Hat Insights service](http://access.redhat.com/insights).  This role is intended to work on Red Hat Enterprise Linux, though it will generally work on any yum based system that has access to the redhat-access-insights RPM.
 
 Requirements
 ------------
@@ -11,7 +11,7 @@ N/A
 Role Variables
 --------------
 
-* insights_display_name:
+* insights_display_name: (optional)
 
     Sets or resets the Display Name/System Name within Insights.  Insights needs an easily identifiable
     name for each system.  If no explicit display name is given to a system, Insights uses it's hostname.
@@ -26,6 +26,15 @@ Role Variables
     If defined to be a non-empty string, this role will replace any previously set display name
     for the system with the given string.
 
+* redhat_portal_username: (optional)
+* redhat_portal_password: (optional)
+    If defined, this role will configure the Insights client to use these credentials for all
+    future interactions with the Insights server.
+
+    These credentials are only necessary if the client system is not registered with Red Hat
+    Subscription Manager.
+
+    These should be valid username/password for Insights/Red Hat Portal/Red Hat Subscription Manager.
 
 
 Dependencies
@@ -38,18 +47,35 @@ Example Playbook
 
     - hosts: all
       roles:
-      - { role: redhataccess.redhat-access-insights-client, when: ansible_os_family == 'RedHat' }
+      - { role: redhatinsights.redhat-insights-client, when: ansible_os_family == 'RedHat' }
 
-If a system's hostname is not easily identifieable, but inventory_hostname is,
-set insights_display_name set to be inventory_hostname:
+If a system's hostname is not easily identifiable, but inventory_hostname is easily identifiable,
+as often happens on some cloud platforms, set insights_display_name set to be inventory_hostname:
 
     - hosts: all
       roles:
-      - role: redhataccess.redhat-access-insights-client
+      - role: redhatinsights.redhat-insights-client
         insights_display_name: "{{ inventory_hostname }}"
         when: ansible_os_family == 'RedHat'
 
+If you need to run the Insights Client on a system that is not registered to Red Hat Subscription
+Manager, as often happens in testing and demoing, set the
+redhat_portal_username/redhat_portal_password in a way that keeps them out of the playbook:
 
+Create a YAML file, say redhat-portal-creds.yaml, on your workstation containing the following,
+with XXXXXX/YYYYYY replaced with our Insights/Portal/RHSM username/password:
+    redhat_portal_username: XXXXXX
+    redhat_portal_password: YYYYYY
+
+Change the permissions on the file so that only you can read them, and then any time you invoke
+this role, add the ansible-playbook --extra-vars option:
+
+    ```bash
+    $ ansible-playbook ... --extra-vars @redhat-portal-creds.yml ...
+    ```
+
+Note that one of the really useful features of Ansible Tower is role based management of credentials
+like this.
 
 
 Example Use
@@ -58,13 +84,13 @@ Example Use
 1. On a system where [Ansible is installed](http://docs.ansible.com/ansible/intro_installation.html), run the following command:
 
     ```bash
-    $ ansible-galaxy install redhataccess.redhat-access-insights-client
+    $ ansible-galaxy install redhatinsights.redhat-insights-client
     ```
 
 1. Copy the Example Playbook to a file named 'install-insights.yml'.
 
-1. Run the command, replacing 'myhost.example.com' with the name of the
-   system where you want to install the insights client.
+1. Run the following command, replacing 'myhost.example.com' with the name of the
+   system where you want to install, configure, and register the insights client.
 
     ```bash
     $ ansible-playbook --limit=myhost.example.com install-insights.yml
@@ -73,4 +99,5 @@ Example Use
 License and Author
 ------------------
 
-See GitHub source repo
+License: MIT
+Author: Red Hat, Inc.
