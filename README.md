@@ -36,6 +36,22 @@ Role Variables
 
     These should be valid username/password for Insights/Red Hat Portal/Red Hat Subscription Manager.
 
+Facts Installed
+---------------
+
+This role installs a new fact 'insights' that provides the system's Insights' System Id.  This System
+Id can be used to query about the system with the Insights Service API.
+
+Once this role is run against a system, any future playbook run against that same system will have
+the system's Insights System Id in the fact 'ansible_local.insights.system_id'.
+
+For example the task:
+
+    - debug: var=ansible_local.insights.system_id
+
+will display the System Id.
+
+
 
 Dependencies
 ------------
