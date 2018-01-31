@@ -1,26 +1,27 @@
 ---
-
 - name: Install Red Hat Access Insights Client
   yum: name=redhat-access-insights state=present
   become: yes
 
-- name: add username to redhat-access-insights.conf
+- name: Configure username in redhat-access-insights.conf
   ini_file:
     path: /etc/redhat-access-insights/redhat-access-insights.conf
     section: redhat-access-insights
     option: username
     value: "{{ redhat_portal_username }}"
-    no_extra_spaces: true
+    no_extra_spaces: yes
+    state: "{{ 'present' if redhat_portal_username else 'absent' }}"
   when: redhat_portal_username is defined
 
-- name: add password to redhat-access-insights.conf
+- name: Configure password in redhat-access-insights.conf
   ini_file:
     path: /etc/redhat-access-insights/redhat-access-insights.conf
     section: redhat-access-insights
     option: password
     value: "{{ redhat_portal_password }}"
     no_extra_spaces: true
-  when: redhat_portal_password is defined
+    state: "{{ 'present' if redhat_portal_username else 'absent' }}"
+  when: redhat_portal_username is defined
 
 - name: Check status of Insights .register file
   stat: path=/etc/redhat-access-insights/.registered
