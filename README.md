@@ -122,5 +122,5 @@ Example Use
 License and Author
 ------------------
 
-License: MIT
+License: Apache License 2.0
 Author: Red Hat, Inc.
