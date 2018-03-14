@@ -1,4 +1,4 @@
-insights-client-role
+insights-client
 ========
 
 Installs, configures, and registers a system to the [Red Hat Insights service](http://access.redhat.com/insights).  This role is intended to work on Red Hat Enterprise Linux, though it will generally work on any yum based system that has access to the redhat-access-insights RPM.
@@ -71,14 +71,14 @@ Example Playbook
 
     - hosts: all
       roles:
-      - { role: RedHatInsights.insights-client-role, when: ansible_os_family == 'RedHat' }
+      - { role: RedHatInsights.insights-client, when: ansible_os_family == 'RedHat' }
 
 If a system's hostname is not easily identifiable, but inventory_hostname is easily identifiable,
 as often happens on some cloud platforms, set insights_display_name set to be inventory_hostname:
 
     - hosts: all
       roles:
-      - role: RedHatInsights.insights-client-role
+      - role: RedHatInsights.insights-client
         insights_display_name: "{{ inventory_hostname }}"
         when: ansible_os_family == 'RedHat'
 
@@ -107,7 +107,7 @@ Example Use
 1. On a system where [Ansible is installed](http://docs.ansible.com/ansible/intro_installation.html), run the following command:
 
     ```bash
-    $ ansible-galaxy install RedHatInsights.insights-client-role
+    $ ansible-galaxy install RedHatInsights.insights-client
     ```
 
 1. Copy the Example Playbook to a file named 'install-insights.yml'.
