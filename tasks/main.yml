@@ -18,31 +18,31 @@
   yum:
     list: insights-client
   register: yum_list_task
-  become: yes
+  become: true
 
 - name: Install 'insights-client' if it is available
   yum:
     name: insights-client
   when: yum_list_task.results|length > 0
-  become: yes
+  become: true
 
 - name: Set Insights Config Name to 'insights-client'
   set_fact:
     insights_name: 'insights-client'
   when: yum_list_task.results|length > 0
-  become: yes
+  become: true
 
 - name: Install 'redhat-access-insights' if 'insights-client' is not available
   yum:
     name: redhat-access-insights
   when: yum_list_task.results|length == 0
-  become: yes
+  become: true
 
 - name: Set Insights Config Name to 'redhat-access-insights'
   set_fact:
     insights_name: 'redhat-access-insights'
   when: yum_list_task.results|length == 0
-  become: yes
+  become: true
 
 - name: Configure username in Insights' Config file
   ini_file:
@@ -50,10 +50,10 @@
     section: "{{ insights_name }}"
     option: username
     value: "{{ redhat_portal_username }}"
-    no_extra_spaces: yes
+    no_extra_spaces: true
     state: "{{ 'present' if redhat_portal_username else 'absent' }}"
   when: redhat_portal_username is defined
-  become: yes
+  become: true
 
 - name: Configure password in Insights Config file
   ini_file:
@@ -64,11 +64,11 @@
     no_extra_spaces: true
     state: "{{ 'present' if redhat_portal_username else 'absent' }}"
   when: redhat_portal_username is defined
-  become: yes
+  become: true
 
 - name: Check status of Insights .register file
   stat: path=/etc/{{ insights_name }}/.registered
-  become: yes
+  become: true
   register: reg_file_task
 
 - name: Unregister if we are setting the display_name, and we have already registered
@@ -76,44 +76,35 @@
   when:
     - insights_display_name is defined
     - reg_file_task.stat.exists == true
-  become: yes
+  become: true
 
-- name: Register to the Red Hat Access Insights Service
-  command: "{{ insights_name }} --register {{ '--display-name='+insights_display_name if insights_display_name is defined else '' }}"
-  ignore_errors: yes
-  become: yes
-  # Always run --register (see next comment for why)
-
-- name: Register to Insights again if necessary
+- name: Register to the Red Hat Access Insights Service if necessary
   command: "{{ insights_name }} --register {{ '--display-name='+insights_display_name if insights_display_name is defined else '' }} creates=/etc/{{ insights_name }}/.registered"
-  become: yes
-  # Only run --register again if there is no .register file at this point
-  #   This is to handle the case where the system was unregistered on the server, but this
-  #   system hasn't noticed and removed the .registered file
+  become: true
 
 - name: Change permissions of Insights Config directory so that Insights System ID can be read
   file:
     path: /etc/{{ insights_name }}
     mode: og=rx
-  become: yes
+  become: true
 
 - name: Change permissions of machine_id file so that Insights System ID can be read
   file:
     path: /etc/{{ insights_name }}/machine-id
     mode: og=r
-  become: yes
+  become: true
 
 
 - name: Create directory for ansible custom facts
   file:
     state: directory
-    recurse: yes
+    recurse: true
     path: /etc/ansible/facts.d
-  become: yes
+  become: true
 
 - name: Install custom insights fact
   copy:
     src: insights.fact
     dest: /etc/ansible/facts.d
     mode: a+x
-  become: yes
+  become: true
