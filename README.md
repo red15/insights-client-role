@@ -1,7 +1,7 @@
 insights-client
 ========
 
-Installs, configures, and registers a system to the [Red Hat Insights service](http://access.redhat.com/insights).  This role is intended to work on Red Hat Enterprise Linux, though it will generally work on any yum based system that has access to the redhat-access-insights RPM.
+Installs, configures, and registers a system to the [Red Hat Insights service](http://access.redhat.com/insights).  This role is intended to work on Red Hat Enterprise Linux, though it will generally work on any yum based system that has access to the insights-client RPM or the redhat-access-insights RPM.
 
 Requirements
 ------------
