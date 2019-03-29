@@ -77,8 +77,10 @@
 
 - name: Unregister if we are setting the display_name, and we have already registered
   block:
-    - command: "{{ insights_name }} --unregister"
-    - set_fact:
+    - name: Unregister to update display name
+      command: "{{ insights_name }} --unregister"
+    - name: Update registration status
+      set_fact:
         reg_status: "unregistered"
   when:
     - insights_display_name is defined
