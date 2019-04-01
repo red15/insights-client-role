@@ -14,34 +14,14 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 #
-- name: Check for 'insights-client' RPM availability
-  yum:
-    list: insights-client
-  register: yum_list_task
-  become: true
-
-- name: Install 'insights-client' if it is available
+- name: Install 'insights-client'
   yum:
     name: insights-client
-  when: yum_list_task.results|length > 0
   become: true
 
 - name: Set Insights Config Name to 'insights-client'
   set_fact:
     insights_name: 'insights-client'
-  when: yum_list_task.results|length > 0
-  become: true
-
-- name: Install 'redhat-access-insights' if 'insights-client' is not available
-  yum:
-    name: redhat-access-insights
-  when: yum_list_task.results|length == 0
-  become: true
-
-- name: Set Insights Config Name to 'redhat-access-insights'
-  set_fact:
-    insights_name: 'redhat-access-insights'
-  when: yum_list_task.results|length == 0
   become: true
 
 - name: Configure username in Insights' Config file
@@ -104,7 +84,6 @@
     path: /etc/{{ insights_name }}/machine-id
     mode: og=r
   become: true
-
 
 - name: Create directory for ansible custom facts
   file:
