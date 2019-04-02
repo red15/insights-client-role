@@ -46,33 +46,12 @@
   when: redhat_portal_username is defined
   become: true
 
-- name: Check status of Insights registration via API
-  command: "{{ insights_name }} --status"
-  register: api_status_result
+- name: Register Insights Client
+  insights_registration:
+    insights_name: "{{ insights_name }}"
+    display_name: "{{ insights_display_name if insights_display_name is defined else '' }}"
   become: true
   
-- name: Assign registration status to variable
-  set_fact:
-    reg_status: "{{ api_status_result.stderr }}"
-
-- name: Unregister if we are setting the display_name, and we have already registered
-  block:
-    - name: Unregister to update display name
-      command: "{{ insights_name }} --unregister"
-    - name: Update registration status
-      set_fact:
-        reg_status: "unregistered"
-  when:
-    - insights_display_name is defined
-    - '"Insights API confirms registration." in reg_status'
-  become: true
-
-- name: Register to the Red Hat Access Insights Service if necessary
-  command: "{{ insights_name }} --register {{ '--display-name='+insights_display_name if insights_display_name is defined else '' }}"
-  when:
-    - '"Insights API confirms registration." not in reg_status'
-  become: true
-
 - name: Change permissions of Insights Config directory so that Insights System ID can be read
   file:
     path: /etc/{{ insights_name }}
