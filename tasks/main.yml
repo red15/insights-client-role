@@ -24,26 +24,13 @@
     insights_name: 'insights-client'
   become: true
 
-- name: Configure username in Insights' Config file
-  ini_file:
-    path: /etc/{{ insights_name }}/{{ insights_name }}.conf
-    section: "{{ insights_name }}"
-    option: username
-    value: "{{ redhat_portal_username }}"
-    no_extra_spaces: true
-    state: "{{ 'present' if redhat_portal_username else 'absent' }}"
-  when: redhat_portal_username is defined
-  become: true
-
-- name: Configure password in Insights Config file
-  ini_file:
-    path: /etc/{{ insights_name }}/{{ insights_name }}.conf
-    section: "{{ insights_name }}"
-    option: password
-    value: "{{ redhat_portal_password }}"
-    no_extra_spaces: true
-    state: "{{ 'present' if redhat_portal_username else 'absent' }}"
-  when: redhat_portal_username is defined
+- name: Set Insights Configuration Values
+  insights_config:
+    insights_name: 'insights-client'
+    username: "{{ redhat_portal_username }}"
+    password: "{{ redhat_portal_password }}"
+    auto_config: "{{ auto_config }}"
+    authmethod: "{{ authmethod }}"
   become: true
 
 - name: Register Insights Client
