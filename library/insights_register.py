@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: insights_registration
+module: insights_register
 
 short_description: This module registers the insights client
 
@@ -24,10 +24,12 @@ options:
         description:
             - For now, this is just 'insights-client', but it could change in the future
             so having it as a variable is just preparing for that
-        required: true
+        required: false
     display_name:
         description:
-            - When registering with insights an optional display_name can be configured
+            - This option is here to enable registering with a display_name outside of using
+            a configuration file. Some may be used to doing it this way so I left this in as
+            an optional parameter.
         required: false
 
 author:
@@ -35,24 +37,31 @@ author:
 '''
 
 EXAMPLES = '''
-# Register a fresh install
+# Register a fresh install (no parameters required)
 - name: Register the insights client on a fresh install
-  insights_registration:
-    insights_name: "{{ insights_name }}"
+  insights_register:
 
-# Register a fresh install with a display name
+# Register a fresh install with a display name (if choosing not to use a configuration file)
 - name: Register the insights client with display name
-  insights_registration:
-    insights_name: "{{ insights_name }}"
+  insights_register:
     display_name: "{{ insights_display_name }}"
+
+# Register a fresh install of redhat-access-insights (this is not a 100% automated process)
+- name: Register redhat-access-insights
+  insights_register:
+    insights_name: 'redhat-access-insights'
+
+Note: The above example for registering redhat-access-insights requires that the playbook be
+changed to install redhat-access-insights and that redhat-access-insights is also passed into
+the insights_config module and that the file paths be changed when using the file module
 '''
 
 RETURN = '''
 original_message:
-    description: The original name param that was passed in
+    description: Just a sentence declaring that there is a registration attempt
     type: str
 message:
-    description: The output message that the sample module generates
+    description: The output message that the module generates
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -61,7 +70,7 @@ import subprocess
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
-        insights_name=dict(type='str', required=True),
+        insights_name=dict(type='str', required=False, default='insights-client'),
         display_name=dict(type='str', required=False, default='')
     )
 
@@ -91,13 +100,12 @@ def run_module():
         subprocess.call([insights_name, '--unregister'])
         reg_status = 1
         result['changed'] = True
-        result['message'] = 'Insights-client has been unregistered'
+        result['message'] = insights_name + ' has been unregistered'
 
     if reg_status is not 0:
-        display_name_arg = '--display-name=' + display_name
-        subprocess.call([insights_name, '--register', display_name_arg])
+        subprocess.call([insights_name, '--register'])
         result['changed'] = True
-        result['message'] = 'Insights-client has been registered'
+        result['message'] = insights_name + ' has been registered'
 
     module.exit_json(**result)
 

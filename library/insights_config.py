@@ -13,11 +13,6 @@ description:
   this module will add those values to the insights-client.conf file prior to registering.
 version_added: "3.0"
 options:
-  insights_name:
-    description:
-    - For now this is just 'insights-client', but that could change in the future if the
-    product name changes.
-    required: true
   username:
     description:
     - Insights basic auth username. If defined this will change, set, or remove the username
@@ -36,14 +31,37 @@ options:
     description:
     - Authentication method for the Portal (BASIC, CERT). Default is BASIC. Note: when
     auto_config is enabled, CERT will be used if RHSM or Satellite is detected.
-    required: true
+    required: false
+  display_name:
+    description:
+    - Custom display name to appear in the Insights web UI. Only used on machine registration.
+    Blank by default.
+    required: false
+  insights_name:
+    description:
+    - For now, this is just 'insights-client', but it could change in the future so having
+    it as a variable is just preparing for that.
+    required: false
 '''
 
 EXAMPLES = '''
-- insights_config:
-    insights_name: 'insights-client' or "{{ insights_name }}"
-    username: "rhn_support" or "{{ redhat_portal_username }}" if passing in as a role variable
-    password: "rhn_password" or "{{ redhat_portal_password }}" if passing in as a role variable
-    auto_config: True
-    authmethod: BASIC
+- name: Configure the insights client to register with username and password
+    insights_config:
+      username: "rhn_support" or "{{ redhat_portal_username }}" if passing in as a role variable
+      password: "rhn_password" or "{{ redhat_portal_password }}"
+      auto_config: False or "{{ auto_config }}"
+      authmethod: BASIC or "{{ authmethod }}"
+  become: true
+
+- name: Configure the insights client to register with RHSM and no display name
+    insights_config:
+  become: true
+
+Note: The above example calls the insights_config module with no parameters. This is because auto_config defaults to True
+which in turn forces the client to try RHSM (or Satellite)
+
+- name: Configure the insights client to register with RHSM and a display name
+    insights_config:
+      display_name: "nice_name" or "{{ insights_display_name }}" if passing in as a role variable
+  become: true
 '''

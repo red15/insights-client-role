@@ -19,35 +19,28 @@
     name: insights-client
   become: true
 
-- name: Set Insights Config Name to 'insights-client'
-  set_fact:
-    insights_name: 'insights-client'
-  become: true
-
 - name: Set Insights Configuration Values
   insights_config:
-    insights_name: 'insights-client'
     username: "{{ redhat_portal_username }}"
     password: "{{ redhat_portal_password }}"
     auto_config: "{{ auto_config }}"
     authmethod: "{{ authmethod }}"
+    display_name: "{{ insights_display_name }}"
   become: true
 
 - name: Register Insights Client
-  insights_registration:
-    insights_name: "{{ insights_name }}"
-    display_name: "{{ insights_display_name if insights_display_name is defined else '' }}"
+  insights_register:
   become: true
   
 - name: Change permissions of Insights Config directory so that Insights System ID can be read
   file:
-    path: /etc/{{ insights_name }}
+    path: /etc/insights-client
     mode: og=rx
   become: true
 
 - name: Change permissions of machine_id file so that Insights System ID can be read
   file:
-    path: /etc/{{ insights_name }}/machine-id
+    path: /etc/insights-client/machine-id
     mode: og=r
   become: true
 

@@ -10,13 +10,14 @@ class ActionModule(ActionBase):
 
         result = super(ActionModule, self).run(tmp, task_vars)
 
-        insights_name = self._task.args.get('insights_name')
+        insights_name = self._task.args.get('insights_name', 'insights-client')
 
         config_vars = dict(
             username = self._task.args.get('username', None),
             password = self._task.args.get('password', None),
             auto_config = self._task.args.get('auto_config', None),
-            authmethod = self._task.args.get('authmethod', None)
+            authmethod = self._task.args.get('authmethod', None),
+            display_name = self._task.args.get('display_name', None)
         )
 
         for k, v in config_vars.items():
