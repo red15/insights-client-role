@@ -30,6 +30,7 @@
 
 - name: Register Insights Client
   insights_register:
+    state: present
   become: true
   
 - name: Change permissions of Insights Config directory so that Insights System ID can be read

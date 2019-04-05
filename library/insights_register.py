@@ -20,6 +20,11 @@ description:
     and then register the insights client (and update the display_name if needed)
 
 options:
+    state:
+        description:
+            - Determines whether to register or unregister insights-client
+        choices: ["present", "absent"]
+        required: true
     insights_name:
         description:
             - For now, this is just 'insights-client', but it could change in the future
@@ -31,24 +36,37 @@ options:
             a configuration file. Some may be used to doing it this way so I left this in as
             an optional parameter.
         required: false
+    force_reregister:
+        description:
+        - This option should be set to true if you wish to force a reregister of the insights-client.
+        Note that this will remove the existing machine-id and create a new one. Only use this option
+        if you are okay with creating a new machine-id.
 
 author:
     - Jason Stephens (@Jason-RH)
 '''
 
 EXAMPLES = '''
-# Register a fresh install (no parameters required)
-- name: Register the insights client on a fresh install
+# Normal Register
+- name: Register the insights client
   insights_register:
+    state: present
 
-# Register a fresh install with a display name (if choosing not to use a configuration file)
-- name: Register the insights client with display name
+# Force a Reregister (for config changes, etc)
+- name: Resgiter the insights client
   insights_register:
-    display_name: "{{ insights_display_name }}"
+    state: present
+    force_reregister: true
 
-# Register a fresh install of redhat-access-insights (this is not a 100% automated process)
+# Unregister
+- name: Unregister the insights client
+  insights_regsiter:
+    state: absent
+
+# Register an install of redhat-access-insights (this is not a 100% automated process)
 - name: Register redhat-access-insights
   insights_register:
+    state: present
     insights_name: 'redhat-access-insights'
 
 Note: The above example for registering redhat-access-insights requires that the playbook be
@@ -70,8 +88,10 @@ import subprocess
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
+        state=dict(choices=['present', 'absent'], default='present'),
         insights_name=dict(type='str', required=False, default='insights-client'),
-        display_name=dict(type='str', required=False, default='')
+        display_name=dict(type='str', required=False, default=''),
+        force_reregister=dict(type='bool', required=False, default=False)
     )
 
     result = dict(
@@ -88,26 +108,41 @@ def run_module():
     if module.check_mode:
         return result
 
-    result['original_message'] = 'Attempting to register insights-client'
-    result['message'] = 'No registration changes have been made'
-
+    state = module.params['state']
     insights_name = module.params['insights_name']
     display_name = module.params['display_name']
+    force_reregister = module.params['force_reregister']
 
     reg_status = subprocess.call([insights_name, '--status'])
 
-    if display_name and reg_status is 0:
-        subprocess.call([insights_name, '--unregister'])
-        reg_status = 1
-        result['changed'] = True
-        result['message'] = insights_name + ' has been unregistered'
+    if state == 'present':
+        result['original_message'] = 'Attempting to register ' + insights_name
+        if reg_status == 0 and not force_reregister:
+            result['changed'] = False
+            result['message'] = 'The Insights API has determined that this machine is already registered'
+            module.exit_json(**result)
+        elif reg_status == 0 and force_reregister:
+            subprocess.call([insights_name, '--force-reregister'])
+            result['changed'] = True
+            result['message'] = 'New machine-id created - ' + insights_name + ' has been registered'
+            module.exit_json(**result)
+        else:
+            subprocess.call([insights_name, '--register'])
+            result['changed'] = True
+            result['message'] = insights_name + ' has been registered'
+            module.exit_json(**result)
 
-    if reg_status is not 0:
-        subprocess.call([insights_name, '--register'])
-        result['changed'] = True
-        result['message'] = insights_name + ' has been registered'
-
-    module.exit_json(**result)
+    if state == 'absent':
+        result['original_message'] = 'Attempting to unregister ' + insights_name
+        if reg_status is not 0:
+            result['changed'] = False
+            result['message'] = insights_name + ' is already unregistered'
+            module.exit_json(**result)
+        else:
+            subprocess.call([insights_name, '--unregister'])
+            result['changed'] = True
+            result['message'] = insights_name + ' has been unregistered'
+            module.exit_json(**result)
 
 def main():
     run_module()
