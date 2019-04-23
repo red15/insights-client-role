@@ -11,6 +11,9 @@ N/A
 Role Variables
 --------------
 
+The following variables can be passed in directly with the playbook invocation or placed in a configuration yaml file.
+See the section 'Example Playbook' for information on various ways to use these variables. 
+
 * insights_display_name: (optional)
 
     Sets or resets the Display Name/System Name within Insights.  Insights needs an easily identifiable
@@ -43,6 +46,13 @@ Role Variables
     Subscription Manager.  If the username and password are not set in the Insights configuration,
     which is the default initial state, all interactions with the Insights server will use the
     CERT provided by RHSM.
+
+* auto_config: (optional)
+    True/False - attempt to auto-configure the network connection with Satellite or RHSM. Default behavior is True.
+
+* authmethod: (optional)
+    BASIC/CERT - This parameter is used to set the authentication method for the Portal. Default bahavior is BASIC.
+    Note: when 'auto_config' is enabled (set to True), CERT will be used if RHSM or Satellite is detected.
 
 Facts Installed
 ---------------
@@ -86,16 +96,18 @@ If you need to run the Insights Client on a system that is not registered to Red
 Manager, as often happens in testing and demoing, set the
 redhat_portal_username/redhat_portal_password in a way that keeps them out of the playbook:
 
-Create a YAML file, say redhat-portal-creds.yaml, on your workstation containing the following,
+Create a YAML file, say insights-client-config.yml, on your workstation containing the following,
 with XXXXXX/YYYYYY replaced with our Insights/Portal/RHSM username/password:
 
     redhat_portal_username: XXXXXX
     redhat_portal_password: YYYYYY
 
+Note: Any of the role variables mentioned earlier can be placed in this configuration file
+
 Change the permissions on the file so that only you can read them, and then any time you invoke
 this role, add the ansible-playbook --extra-vars option:
 
-    $ ansible-playbook ... --extra-vars @redhat-portal-creds.yml ...
+    $ ansible-playbook ... --extra-vars @insights-client-config.yml ...
 
 Note that one of the really useful features of Ansible Tower is role based management of credentials
 like this.
