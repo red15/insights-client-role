@@ -6,12 +6,22 @@ Installs, configures, and registers a system to the [Red Hat Insights service](h
 Requirements
 ------------
 
-N/A
+**Note to anyone using this role to manage RHEL 8 systems:**
 
-Role Variables
+RHEL 8 changed the default path for the python interpreter so this role will need to know the new path. 
+Ansible version 2.8+ can determine the correct path automatically, but if you are using Ansible version 2.7 
+or lower the path will need to be supplied to the role. This can be done by configuring the `ansible_python_interpreter` 
+parameter via the configuration file (shown in the examples further down), playbook invocation, inventory, etc.
+
+RHEL 8 platform-python path: **/usr/libexec/platform-python**
+
+This is only required when managing RHEL 8 systems with Ansible version 2.7 or lower. 
+
+Role Variables / Configuration
 --------------
 
-The following variables can be passed in directly with the playbook invocation or placed in a configuration yaml file.
+The following variables can be used to perform some initial configuration for the insights-client install. 
+These variables can be passed in directly with the playbook invocation or placed in a configuration yaml file.
 See the section 'Example Playbook' for information on various ways to use these variables. 
 
 * insights_display_name: (optional)
@@ -31,6 +41,7 @@ See the section 'Example Playbook' for information on various ways to use these 
 
 * redhat_portal_username: (optional)
 * redhat_portal_password: (optional)
+    
     If defined, these set, change, or remove the username and password in the Insights configuration.
     If undefined, this role will make no changes to the Insights configuration.
 
@@ -48,11 +59,20 @@ See the section 'Example Playbook' for information on various ways to use these 
     CERT provided by RHSM.
 
 * auto_config: (optional)
+    
     True/False - attempt to auto-configure the network connection with Satellite or RHSM. Default behavior is True.
 
 * authmethod: (optional)
+    
     BASIC/CERT - This parameter is used to set the authentication method for the Portal. Default bahavior is BASIC.
     Note: when 'auto_config' is enabled (set to True), CERT will be used if RHSM or Satellite is detected.
+
+* ansible_python_interpreter: (see Requirements above to determine if this is needed)
+
+    This variable allows you to provide the python interpreter path for ansible to use. This is needed when 
+    managing RHEL 8 with older versions of Ansible (2.7 and lower).
+
+    RHEL 8 platform-python path: **/usr/libexec/platform-python**
 
 Facts Installed
 ---------------
@@ -69,8 +89,6 @@ For example the task:
 
 will display the System Id.
 
-
-
 Dependencies
 ------------
 
@@ -79,39 +97,51 @@ N/A
 Example Playbook
 ----------------
 
+In the examples directory is a very basic playbook utilizing this role:
+
     - hosts: all
       roles:
       - { role: RedHatInsights.insights-client, when: ansible_os_family == 'RedHat' }
 
-If a system's hostname is not easily identifiable, but inventory_hostname is easily identifiable,
-as often happens on some cloud platforms, set insights_display_name set to be inventory_hostname:
+Here is an example with additional configuration (though using a separate file is preferred if including 
+usernames or passwords):
 
     - hosts: all
       roles:
       - role: RedHatInsights.insights-client
-        insights_display_name: "{{ inventory_hostname }}"
+          vars:
+            insights_display_name: 'example_system'
+            ansible_python_interpreter: '/usr/libexec/platform-python'
         when: ansible_os_family == 'RedHat'
 
+Example Configuration File
+----------------
+
+The insights-client install can be configured by using a configuration yaml file to modify various parameters. 
+Here's an example, insights-client-config.yml, that configures the insights-client to register via basic auth 
+using the provided username/password and display_name:
+
+```yaml
+redhat_portal_username: example_user
+redhat_portal_password: example_password
+insights_display_name: example_system
+autoconfig: False
+authmethod: BASIC
+```
+
+**Reminder:** Check Requirements above to determine if `ansible_python_interpreter` should be configured prior to running.
+
 If you need to run the Insights Client on a system that is not registered to Red Hat Subscription
-Manager, as often happens in testing and demoing, set the
-redhat_portal_username/redhat_portal_password in a way that keeps them out of the playbook:
-
-Create a YAML file, say insights-client-config.yml, on your workstation containing the following,
-with XXXXXX/YYYYYY replaced with our Insights/Portal/RHSM username/password:
-
-    redhat_portal_username: XXXXXX
-    redhat_portal_password: YYYYYY
+Manager, as often happens in testing and demoing, set the redhat_portal_username/redhat_portal_password.
 
 Note: Any of the role variables mentioned earlier can be placed in this configuration file
 
-Change the permissions on the file so that only you can read them, and then any time you invoke
+Change the permissions on the file so that only you can read them (in case usernames/passwords are listed), and then any time you invoke
 this role, add the ansible-playbook --extra-vars option:
 
     $ ansible-playbook ... --extra-vars @insights-client-config.yml ...
 
-Note that one of the really useful features of Ansible Tower is role based management of credentials
-like this.
-
+Note: One of the really useful features of Ansible Tower is role based management of credentials.
 
 Example Use
 -----------
@@ -122,14 +152,19 @@ Example Use
     $ ansible-galaxy install RedHatInsights.insights-client
     ```
 
+    This will install the latest version of the role to ansible's default role directory (if using a non default role directory 
+    update the playbook accordingly)
+
 1. Copy the Example Playbook to a file named 'install-insights.yml'.
 
 1. Run the following command, replacing 'myhost.example.com' with the name of the
    system where you want to install, configure, and register the insights client.
 
     ```bash
-    $ ansible-playbook --limit=myhost.example.com install-insights.yml
+    $ ansible-playbook --limit=myhost.example.com install-insights.yml --extra-vars @insights-client-config.yml
     ```
+
+    Note: The ansible-playbok invocation will depend on ansible configuration
 
 License and Author
 ------------------
