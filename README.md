@@ -6,7 +6,7 @@ Installs, configures, and registers a system to the [Red Hat Insights service](h
 Requirements
 ------------
 
-**Note to anyone using this role to manage RHEL 8 systems:**
+**Note on managing RHEL 8 systems:**
 
 RHEL 8 changed the default path for the python interpreter so this role will need to know the new path. 
 Ansible version 2.8+ can determine the correct path automatically, but if you are using Ansible version 2.7 
@@ -16,6 +16,10 @@ parameter via the configuration file (shown in the examples further down), playb
 RHEL 8 platform-python path: **/usr/libexec/platform-python**
 
 This is only required when managing RHEL 8 systems with Ansible version 2.7 or lower. 
+
+**Note on managing RHEL 6 SELinux systems:**
+
+Almost all uses of Ansible that target SELinux machines require that the python module 'selinux' is installed. On RHEL that module is provided by the rpm 'python-selinux'. This rpm will need to be installed prior to using this role on RHEL 6 (it is already included in RHEL 7). 
 
 Role Variables / Configuration
 --------------
