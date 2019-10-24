@@ -168,7 +168,7 @@ Example Use
     $ ansible-playbook --limit=myhost.example.com install-insights.yml --extra-vars @insights-client-config.yml
     ```
 
-    Note: The ansible-playbok invocation will depend on ansible configuration
+    Note: The ansible-playbook invocation will depend on ansible configuration
 
 License and Author
 ------------------
