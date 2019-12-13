@@ -54,14 +54,14 @@ EXAMPLES = '''
     state: present
 
 # Force a Reregister (for config changes, etc)
-- name: Resgiter the insights client
+- name: Register the insights client
   insights_register:
     state: present
     force_reregister: true
 
 # Unregister
 - name: Unregister the insights client
-  insights_regsiter:
+  insights_register:
     state: absent
 
 # Register an install of redhat-access-insights (this is not a 100% automated process)
