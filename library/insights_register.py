@@ -111,7 +111,7 @@ def run_module():
     display_name = module.params['display_name']
     force_reregister = module.params['force_reregister']
 
-    reg_status = subprocess.call([insights_name, '--status'])
+    (reg_status, _, _) = module.run_command([insights_name, '--status'])
 
     if state == 'present':
         result['original_message'] = 'Attempting to register ' + insights_name
@@ -120,12 +120,12 @@ def run_module():
             result['message'] = 'The Insights API has determined that this machine is already registered'
         elif reg_status == 0 and force_reregister:
             if not module.check_mode:
-                subprocess.call([insights_name, '--force-reregister'])
+                module.run_command([insights_name, '--force-reregister'])
             result['changed'] = True
             result['message'] = 'New machine-id created - ' + insights_name + ' has been registered'
         else:
             if not module.check_mode:
-                subprocess.call([insights_name, '--register'])
+                module.run_command([insights_name, '--register'])
             result['changed'] = True
             result['message'] = insights_name + ' has been registered'
 
@@ -136,7 +136,7 @@ def run_module():
             result['message'] = insights_name + ' is already unregistered'
         else:
             if not module.check_mode:
-                subprocess.call([insights_name, '--unregister'])
+                module.run_command([insights_name, '--unregister'])
             result['changed'] = True
             result['message'] = insights_name + ' has been unregistered'
 
