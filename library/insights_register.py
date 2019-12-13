@@ -135,7 +135,8 @@ def run_module():
             result['changed'] = False
             result['message'] = insights_name + ' is already unregistered'
         else:
-            subprocess.call([insights_name, '--unregister'])
+            if not module.check_mode:
+                subprocess.call([insights_name, '--unregister'])
             result['changed'] = True
             result['message'] = insights_name + ' has been unregistered'
 
